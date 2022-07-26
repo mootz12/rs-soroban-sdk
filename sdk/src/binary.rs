@@ -16,13 +16,15 @@ use super::{env::TryIntoEnvVal, xdr::ScVal};
 
 #[macro_export]
 macro_rules! bin {
-    ($env:expr) => {
-        $crate::Binary::new($env)
-    };
-    ($env:expr, $($x:expr),+ $(,)?) => {
-        $crate::Binary::from_array($env, [$($x),+])
-    };
+    ($env:expr) => { $crate::Binary::new($env) };
+    ($env:expr, $($x:expr),+ $(,)?) => { $crate::Binary::from_array($env, [$($x),+]) };
 }
+#[macro_export]
+macro_rules! bin16 { ($env:expr, $($x:expr),+ $(,)?) => { $crate::FixedBinary::<16>::from_array($env, [$($x),+]) }; }
+#[macro_export]
+macro_rules! bin32 { ($env:expr, $($x:expr),+ $(,)?) => { $crate::FixedBinary::<32>::from_array($env, [$($x),+]) }; }
+#[macro_export]
+macro_rules! bin64 { ($env:expr, $($x:expr),+ $(,)?) => { $crate::FixedBinary::<64>::from_array($env, [$($x),+]) }; }
 
 #[derive(Clone)]
 #[repr(transparent)]
@@ -657,6 +659,37 @@ mod test {
             b.push(1);
             b
         });
+    }
+
+    #[test]
+    fn test_bin_fixed_macro() {
+        let env = Env::default();
+        assert_eq!(
+            bin32![
+                &env, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+            ],
+            bin![
+                &env, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+            ]
+            .try_into()
+            .unwrap(),
+        );
+        assert_eq!(
+            bin64![
+                &env, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+            ],
+            bin![
+                &env, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+            ]
+            .try_into()
+            .unwrap(),
+        );
     }
 
     #[test]
